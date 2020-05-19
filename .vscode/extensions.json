@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-vscode.vscode-typescript-tslint-plugin",
+        "steoates.autoimport",
+        "stringham.move-ts",
+        "streetsidesoftware.code-spell-checker"
+    ]
+}

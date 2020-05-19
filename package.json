@@ -1,0 +1,88 @@
+{
+    "name": "node-gitlab-ci",
+    "version": "0.1.0",
+    "description": "Create dynamically created GitLab CI pipelines within Node and TypeScript.",
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc -w",
+        "lint": "eslint \"src/**/*.ts\""
+    },
+    "keywords": [
+        "gitlab",
+        "gitlab-ci",
+        "continuous-integration"
+    ],
+    "bin": {
+        "node-gitlab-ci": "lib/index.js"
+    },
+    "main": "lib/index.js",
+    "types": "src/index.ts",
+    "homepage": "https://devowl.io/",
+    "repository": {
+        "type": "git",
+        "url": "git+https://gitlab.com/devowlio/node-gitlab-ci.git"
+    },
+    "bugs": {
+        "url": "https://gitlab.com/devowlio/node-gitlab-ci/issues"
+    },
+    "author": {
+        "name": "Matthias Günter",
+        "email": "matthias.guenter@devowl.io",
+        "url": "https://devowl.io/"
+    },
+    "contributors": [
+        {
+            "name": "devowl.io GmbH",
+            "email": "mail@devowl.io"
+        }
+    ],
+    "license": "MIT",
+    "husky": {
+        "hooks": {
+            "pre-commit": "pretty-quick --staged",
+            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+        }
+    },
+    "commitlint": {
+        "extends": [
+            "@commitlint/config-conventional"
+        ],
+        "rules": {
+            "header-max-length": [
+                2,
+                "always",
+                140
+            ]
+        }
+    },
+    "prettier": {
+        "arrowParens": "always",
+        "printWidth": 120,
+        "useTabs": false,
+        "tabWidth": 4,
+        "endOfLine": "lf"
+    },
+    "dependencies": {
+        "commander": "^5.1.0",
+        "deepmerge": "^4.2.2",
+        "glob": "^7.1.6",
+        "yamljs": "^0.3.0"
+    },
+    "devDependencies": {
+        "@commitlint/cli": "^8.2.0",
+        "@commitlint/config-conventional": "^8.2.0",
+        "@types/glob": "^7.1.1",
+        "@types/node": "^14.0.1",
+        "@types/yamljs": "^0.2.31",
+        "@typescript-eslint/eslint-plugin": "^2.9.0",
+        "@typescript-eslint/parser": "^2.9.0",
+        "eslint": "^7.0.0",
+        "eslint-config-prettier": "^6.7.0",
+        "eslint-plugin-prettier": "^3.1.1",
+        "husky": "^4.2.1",
+        "prettier": "^2.0.5",
+        "pretty-quick": "^2.0.1",
+        "ts-node": "^8.10.1",
+        "typescript": "^3.7.2"
+    }
+}
