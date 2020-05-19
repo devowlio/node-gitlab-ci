@@ -1,6 +1,6 @@
 {
     "name": "node-gitlab-ci",
-    "version": "0.1.4",
+    "version": "0.1.6",
     "description": "Create dynamically created GitLab CI pipelines within Node and TypeScript.",
     "scripts": {
         "build": "tsc",
