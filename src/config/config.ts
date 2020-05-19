@@ -161,10 +161,14 @@ class Config {
             if (job.extends && !key.startsWith(".")) {
                 recursivelyExtend(job, job);
 
+                let result: JobDefinitionExtends = {};
                 const { needsExtends } = job as JobDefinitionExtends;
                 for (const extendKey of needsExtends) {
-                    copy.jobs[key] = merge(copy.jobs[key], copy.jobs[extendKey]);
+                    result = merge(result, copy.jobs[extendKey]);
                 }
+
+                // The main job definition has highest priority
+                copy.jobs[key] = merge(result, job);
             }
         }
 
