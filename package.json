@@ -67,7 +67,8 @@
         "deepmerge": "^4.2.2",
         "glob": "^7.1.6",
         "ts-node": "^8.10.1",
-        "yamljs": "^0.3.0"
+        "yamljs": "^0.3.0",
+        "typescript": "^3.7.2"
     },
     "devDependencies": {
         "@commitlint/cli": "^8.2.0",
@@ -82,7 +83,6 @@
         "eslint-plugin-prettier": "^3.1.1",
         "husky": "^4.2.1",
         "prettier": "^2.0.5",
-        "pretty-quick": "^2.0.1",
-        "typescript": "^3.7.2"
+        "pretty-quick": "^2.0.1"
     }
 }
