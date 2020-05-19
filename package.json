@@ -66,6 +66,7 @@
         "commander": "^5.1.0",
         "deepmerge": "^4.2.2",
         "glob": "^7.1.6",
+        "ts-node": "^8.10.1",
         "yamljs": "^0.3.0"
     },
     "devDependencies": {
@@ -82,7 +83,6 @@
         "husky": "^4.2.1",
         "prettier": "^2.0.5",
         "pretty-quick": "^2.0.1",
-        "ts-node": "^8.10.1",
         "typescript": "^3.7.2"
     }
 }
