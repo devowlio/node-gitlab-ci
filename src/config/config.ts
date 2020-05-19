@@ -128,7 +128,8 @@ class Config {
         let copy = JSON.parse(JSON.stringify(this.plain)) as GitLabCi;
 
         // Resolve `extends`
-        for (const key of Object.keys(copy.jobs)) {
+        const jobIds = Object.keys(copy.jobs);
+        for (const key of jobIds) {
             const job = copy.jobs[key];
             if (job.extends) {
                 let result: typeof job = {};
@@ -138,10 +139,22 @@ class Config {
                     if (!jobObj) {
                         console.warn(`The job "${from}" does not exist, skipping...`);
                     }
+
                     result = merge(result, jobObj);
                 }
 
                 copy.jobs[key] = merge(result, job);
+            }
+        }
+
+        // Finally, remove all existing `extends`
+        for (const key of jobIds) {
+            const job = copy.jobs[key];
+            if (job.extends) {
+                job.extends = job.extends.filter((job) => jobIds.indexOf(job) === -1);
+                if (!job.extends.length) {
+                    delete job.extends;
+                }
             }
         }
 

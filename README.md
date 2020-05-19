@@ -23,6 +23,7 @@ _tbd:_
 -   Your first `.gitlab-ci.ts` file
 -   How `extends` work
 -   How `include` works
+-   Use external packages
 
 ## Todo:
 
