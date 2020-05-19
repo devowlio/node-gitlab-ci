@@ -20,7 +20,7 @@ Afterwards, create a `.gitlab-ci.yml` file with the following content:
 # CI pipeline is dynamically created through `node-gitlab-ci`, please checkout `.gitlab-ci.ts`!
 
 ts config:
-    image: devowliode/node-gitlab-ci:0.1.7
+    image: devowliode/node-gitlab-ci:latest
     stage: build
     script: node-gitlab-ci create-yml
     artifacts:

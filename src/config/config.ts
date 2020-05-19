@@ -1,4 +1,4 @@
-import { GitLabCi } from ".";
+import { GitLabCi, JobDefinition } from ".";
 import merge from "deepmerge";
 import { sync as globSync } from "glob";
 
@@ -127,23 +127,31 @@ class Config {
     public getPlainObject() {
         let copy = JSON.parse(JSON.stringify(this.plain)) as GitLabCi;
 
+        function recursivelyExtend(key: string, job: JobDefinition) {
+            if (job.extends) {
+                let result: typeof job = {};
+
+                for (const from of job.extends) {
+                    const jobObj = copy.jobs?.[from] || copy.jobs?.[`.${from}`];
+                    if (!jobObj) {
+                        console.warn(`The job "${from}" does not exist, skipping...`);
+                        continue;
+                    }
+
+                    result = merge(result, recursivelyExtend(key, jobObj));
+                }
+
+                return merge(result, job);
+            }
+            return job;
+        }
+
         // Resolve `extends`
         const jobIds = Object.keys(copy.jobs);
         for (const key of jobIds) {
             const job = copy.jobs[key];
             if (job.extends) {
-                let result: typeof job = {};
-
-                for (const from of job.extends) {
-                    const jobObj = this.plain.jobs?.[from] || this.plain.jobs?.[`.${from}`];
-                    if (!jobObj) {
-                        console.warn(`The job "${from}" does not exist, skipping...`);
-                    }
-
-                    result = merge(result, jobObj);
-                }
-
-                copy.jobs[key] = merge(result, job);
+                copy.jobs[key] = recursivelyExtend(key, job);
             }
         }
 
