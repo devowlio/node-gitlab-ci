@@ -12,6 +12,7 @@ async function executeCreateYml(opts: CreateYmlOpts) {
 
     require("ts-node").register({
         dir: join(dirname(opts.file)),
+        transpileOnly: true,
     });
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires

@@ -32,9 +32,7 @@
         "esModuleInterop": true,
 
         /* Experimental Options */
-        "experimentalDecorators": true,
-
-        "types": ["node"]
+        "experimentalDecorators": true
     },
     "include": ["src/**/*"]
 }
