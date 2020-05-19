@@ -126,42 +126,56 @@ class Config {
      */
     public getPlainObject() {
         let copy = JSON.parse(JSON.stringify(this.plain)) as GitLabCi;
+        type JobDefinitionExtends = JobDefinition & { needsExtends?: string[] };
 
-        function recursivelyExtend(key: string, job: JobDefinition) {
+        function recursivelyExtend(firstJob: JobDefinitionExtends, job: JobDefinitionExtends) {
             if (job.extends) {
-                let result: typeof job = {};
+                if (!job.needsExtends) {
+                    job.needsExtends = [];
+                }
 
                 for (const from of job.extends) {
-                    const jobObj = copy.jobs?.[from] || copy.jobs?.[`.${from}`];
-                    if (!jobObj) {
+                    let jobKey: string;
+                    if (copy.jobs?.[from]) {
+                        jobKey = from;
+                    } else if (copy.jobs?.[`.${from}`]) {
+                        jobKey = `.${from}`;
+                    }
+
+                    if (!jobKey) {
                         console.warn(`The job "${from}" does not exist, skipping...`);
                         continue;
                     }
+                    const jobObj = copy.jobs[jobKey];
+                    firstJob.needsExtends.unshift(from);
 
-                    result = merge(result, recursivelyExtend(key, jobObj));
+                    recursivelyExtend(firstJob, jobObj);
                 }
-
-                return merge(result, job);
             }
-            return job;
         }
 
         // Resolve `extends`
         const jobIds = Object.keys(copy.jobs);
         for (const key of jobIds) {
             const job = copy.jobs[key];
-            if (job.extends) {
-                copy.jobs[key] = recursivelyExtend(key, job);
+            if (job.extends && !key.startsWith(".")) {
+                recursivelyExtend(job, job);
+
+                const { needsExtends } = job as JobDefinitionExtends;
+                for (const extendKey of needsExtends) {
+                    copy.jobs[key] = merge(copy.jobs[key], copy.jobs[extendKey]);
+                }
             }
         }
 
         // Finally, remove all existing `extends`
         for (const key of jobIds) {
-            const job = copy.jobs[key];
+            const job = copy.jobs[key] as JobDefinitionExtends;
             if (job.extends) {
                 job.extends = job.extends.filter((job) => jobIds.indexOf(job) === -1);
                 if (!job.extends.length) {
                     delete job.extends;
+                    delete job.needsExtends;
                 }
             }
         }
