@@ -2,10 +2,11 @@ import { GitLabCi, JobDefinition } from ".";
 import merge from "deepmerge";
 import { sync as globSync } from "glob";
 
+type JobDefinitionExtends = JobDefinition & { needsExtends?: string[] };
+type MacroArgs = {};
+
 /**
  * A global OOP-style GitLab CI configurator.
- *
- * TODO: check if all available properties can be set by this class.
  */
 class Config {
     /**
@@ -13,6 +14,23 @@ class Config {
      * of classes so all is done within this class.
      */
     private plain: GitLabCi = {};
+
+    /**
+     * See macro() method.
+     */
+    private macros: { [key: string]: (config: Config, args: any) => void } = {};
+
+    /**
+     * The top-level `workflow:` key applies to the entirety of a pipeline, and will determine whether
+     * or not a pipeline is created. It currently accepts a single `rules:` key that operates similarly
+     * to `rules:` defined within jobs, enabling dynamic configuration of the pipeline.
+     */
+    public workflow(workflow: GitLabCi["workflow"]) {
+        if (!this.plain.workflow) {
+            this.plain.workflow = { rules: [] };
+        }
+        this.plain.workflow = merge(this.plain.workflow, workflow);
+    }
 
     /**
      * `stages` is used to define stages that can be used by jobs and is defined globally.
@@ -51,6 +69,48 @@ class Config {
             this.plain.variables = {};
         }
         this.plain.variables[key] = value;
+    }
+
+    /**
+     * Get variable from job.
+     */
+    public getVariable(job: string, key: string) {
+        const jobVariable = this.plain.jobs[job]?.variables[key];
+        if (jobVariable !== undefined) {
+            return jobVariable;
+        }
+
+        return this.plain.variables?.[key];
+    }
+
+    /**
+     * Register a macro. A macro can be used to define jobs from a given variable map.
+     *
+     * @param key
+     * @param callback
+     */
+    public macro<T extends MacroArgs>(key: string, callback: (config: Config, args: T) => void) {
+        if (this.macros[key]) {
+            throw new Error(`Macro ${key} already defined! You are not allowed to overwrite it.`);
+        }
+
+        this.macros[key] = callback;
+    }
+
+    /**
+     * Apply a macro.
+     *
+     * @param key
+     * @param args
+     */
+    public from<T extends MacroArgs>(key: string, args: T) {
+        if (!this.macros[key]) {
+            throw new Error(
+                `Macro ${key} not found, please register it with Config#macro! Consider also, that you need to register the macro before you execute from it.`
+            );
+        }
+
+        this.macros[key](this, args);
     }
 
     /**
@@ -121,60 +181,70 @@ class Config {
         }
     }
 
-    /**
-     * Get the whole configuration as yaml-serializable object.
-     */
-    public getPlainObject() {
-        let copy = JSON.parse(JSON.stringify(this.plain)) as GitLabCi;
-        type JobDefinitionExtends = JobDefinition & { needsExtends?: string[] };
+    private recursivelyExtend(
+        pipeline: GitLabCi,
+        firstJob: JobDefinitionExtends,
+        job: JobDefinitionExtends = firstJob
+    ) {
+        if (job.extends) {
+            if (!job.needsExtends) {
+                job.needsExtends = [];
+            }
 
-        function recursivelyExtend(firstJob: JobDefinitionExtends, job: JobDefinitionExtends) {
-            if (job.extends) {
-                if (!job.needsExtends) {
-                    job.needsExtends = [];
+            for (const from of job.extends) {
+                let jobKey: string;
+                if (pipeline.jobs?.[from]) {
+                    jobKey = from;
+                } else if (pipeline.jobs?.[`.${from}`]) {
+                    jobKey = `.${from}`;
                 }
 
-                for (const from of job.extends) {
-                    let jobKey: string;
-                    if (copy.jobs?.[from]) {
-                        jobKey = from;
-                    } else if (copy.jobs?.[`.${from}`]) {
-                        jobKey = `.${from}`;
-                    }
-
-                    if (!jobKey) {
-                        console.warn(`The job "${from}" does not exist, skipping...`);
-                        continue;
-                    }
-                    const jobObj = copy.jobs[jobKey];
-                    firstJob.needsExtends.unshift(from);
-
-                    recursivelyExtend(firstJob, jobObj);
+                if (!jobKey) {
+                    console.warn(`The job "${from}" does not exist, skipping...`);
+                    continue;
                 }
+                const jobObj = pipeline.jobs[jobKey];
+                firstJob.needsExtends.unshift(from);
+
+                this.recursivelyExtend(pipeline, firstJob, jobObj);
             }
         }
+    }
 
-        // Resolve `extends`
-        const jobIds = Object.keys(copy.jobs);
+    /**
+     * Resolves all `extends` and puts it in correct order.
+     *
+     * @param pipeline
+     */
+    private resolveExtends(pipeline: GitLabCi) {
+        const jobIds = Object.keys(pipeline.jobs);
         for (const key of jobIds) {
-            const job = copy.jobs[key];
+            const job = pipeline.jobs[key];
             if (job.extends && !key.startsWith(".")) {
-                recursivelyExtend(job, job);
+                this.recursivelyExtend(pipeline, job);
 
                 let result: JobDefinitionExtends = {};
                 const { needsExtends } = job as JobDefinitionExtends;
                 for (const extendKey of needsExtends) {
-                    result = merge(result, copy.jobs[extendKey]);
+                    result = merge(result, pipeline.jobs[extendKey]);
                 }
 
                 // The main job definition has highest priority
-                copy.jobs[key] = merge(result, job);
+                pipeline.jobs[key] = merge(result, job);
             }
         }
+    }
 
+    /**
+     * Clear temporary hold variables.
+     *
+     * @param pipeline
+     */
+    private clear(pipeline: GitLabCi) {
         // Finally, remove all existing `extends`
+        const jobIds = Object.keys(pipeline.jobs);
         for (const key of jobIds) {
-            const job = copy.jobs[key] as JobDefinitionExtends;
+            const job = pipeline.jobs[key] as JobDefinitionExtends;
             if (job.extends) {
                 job.extends = job.extends.filter((job) => jobIds.indexOf(job) === -1);
                 if (!job.extends.length) {
@@ -183,6 +253,16 @@ class Config {
                 }
             }
         }
+    }
+
+    /**
+     * Get the whole configuration as yaml-serializable object.
+     */
+    public getPlainObject() {
+        let copy = JSON.parse(JSON.stringify(this.plain)) as GitLabCi;
+
+        this.resolveExtends(copy);
+        this.clear(copy);
 
         // Move jobs to root
         copy = {
@@ -198,4 +278,4 @@ class Config {
 type CreateConfigFunction = () => Promise<Config>;
 type ExtendConfigFunction = (config: Config) => void;
 
-export { Config, CreateConfigFunction, ExtendConfigFunction };
+export { Config, CreateConfigFunction, ExtendConfigFunction, MacroArgs };

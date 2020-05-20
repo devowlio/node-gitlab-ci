@@ -161,6 +161,30 @@ config.extends([".only production", ".common files changed"], "my-job", {
 });
 ```
 
+### How `macro` works
+
+With macros you can define callbacks and consume them with a set of parameters so you can dynamically create jobs with "hard coded" variables. The most excited use case is `only` in a monorepo:
+
+```ts
+type EsLintMacroArgs = MacroArgs & {
+    prefix: string;
+};
+
+config.macro<EsLintMacroArgs>("lint eslint", (self, { prefix }) => {
+    config.extends([`.common files changed`, `.lint eslint`], `${prefix} lint eslint`, {
+        only: {
+            changes: [`packages/${packageName}/{lib,scripts,test}/**/*.{js,jsx,tsx,ts}`],
+        },
+    });
+});
+```
+
+And in your package you can use this macro as follow:
+
+```ts
+config.from<EsLintMacroArgs>("lint eslint", { prefix: "utils" });
+```
+
 ### Use installed modules
 
 As mentioned previously you can not `import` or `require` any module. If you want to do so, you need to consider the following:
