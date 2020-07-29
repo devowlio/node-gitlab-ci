@@ -1,9 +1,19 @@
 import { GitLabCi, JobDefinition } from ".";
 import merge from "deepmerge";
 import { sync as globSync } from "glob";
+import { Gitlab } from "@gitbeaker/node";
+import { execSync } from "child_process";
 
 type JobDefinitionExtends = JobDefinition & { needsExtends?: string[] };
 type MacroArgs = {};
+
+type ConstructedType<Constructor> = Constructor extends {
+    new (...args: any[]): infer B;
+}
+    ? B
+    : never;
+
+type GitlabType = ConstructedType<typeof Gitlab>;
 
 /**
  * A global OOP-style GitLab CI configurator.
@@ -19,6 +29,11 @@ class Config {
      * See macro() method.
      */
     private macros: { [key: string]: (config: Config, args: any) => void } = {};
+
+    /**
+     * REST API handler.
+     */
+    private gapi?: GitlabType;
 
     /**
      * The top-level `workflow:` key applies to the entirety of a pipeline, and will determine whether
@@ -181,6 +196,65 @@ class Config {
         }
     }
 
+    /**
+     * Get the whole configuration as yaml-serializable object.
+     */
+    public getPlainObject() {
+        let copy = JSON.parse(JSON.stringify(this.plain)) as GitLabCi;
+
+        this.resolveExtends(copy);
+        this.clear(copy);
+
+        // Move jobs to root
+        copy = {
+            ...copy,
+            ...copy.jobs,
+        };
+        delete copy.jobs;
+
+        return copy;
+    }
+
+    /**
+     * Get the REST API handler.
+     *
+     * @see https://www.npmjs.com/package/node-gitlab
+     */
+    public get api() {
+        if (!this.gapi) {
+            this.gapi = new Gitlab({
+                host: process.env.CI_API_V4_URL,
+                token: process.env.GITLAB_TOKEN,
+                jobToken: process.env.CI_JOB_TOKEN,
+                rejectUnauthorized: true,
+            }) as GitlabType;
+        }
+        return this.gapi;
+    }
+
+    /**
+     * Check if files got changed by a commit by a regexp. E. g. `^\.vscode\/launch\.json$`.
+     */
+    public async hasChanged(regexp?: RegExp, sha?: string, cwd = process.cwd()) {
+        const useSha =
+            sha ||
+            process.env.CI_COMMIT_SHA ||
+            execSync("git rev-parse HEAD", {
+                encoding: "utf-8",
+                cwd,
+            });
+        const list = execSync("git diff-tree --no-commit-id --name-only -r " + useSha, {
+            encoding: "utf-8",
+            cwd,
+        }).toString();
+
+        if (!regexp) {
+            return list.split("\n");
+        }
+
+        return regexp.test(list);
+    }
+
     private recursivelyExtend(
         pipeline: GitLabCi,
         firstJob: JobDefinitionExtends,
@@ -253,25 +327,6 @@ class Config {
                 }
             }
         }
-    }
-
-    /**
-     * Get the whole configuration as yaml-serializable object.
-     */
-    public getPlainObject() {
-        let copy = JSON.parse(JSON.stringify(this.plain)) as GitLabCi;
-
-        this.resolveExtends(copy);
-        this.clear(copy);
-
-        // Move jobs to root
-        copy = {
-            ...copy,
-            ...copy.jobs,
-        };
-        delete copy.jobs;
-
-        return copy;
     }
 }
 

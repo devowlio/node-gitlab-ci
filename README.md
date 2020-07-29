@@ -36,7 +36,7 @@ trigger pipeline:
               job: ts config
 ```
 
-What does this mean? The first job creates the `.gitlab-ci.ts.yml` file dynamically and the second job triggers the child pipeline. Learn more about it [here](https://docs.gitlab.com/ee/ci/parent_child_pipelines.html).
+What does this mean? The first job creates the `.gitlab-ci.ts.yml` file dynamically and the second job triggers the child pipeline. Learn more about it [here](https://docs.gitlab.com/ee/ci/parent_child_pipelines.html). It is recommend to add `.gitlab-ci.ts.yml` to your `.gitignore` file.
 
 ## Usage
 
@@ -98,9 +98,9 @@ npx node-gitlab-ci create-yml
 
 A file `.gitlab-ci.ts.yml` will be created.
 
-### Monorepo support / How `include` works
+### How `include` works
 
-The most interesting part of `node-gitlab-ci` is the monorepo support (for example you are using `yarn workspaces` or `lerna`). With `Config#include` you can dynamically include files by a glob pattern:
+The most interesting part of `node-gitlab-ci` is how `include` works (for example you are using `yarn workspaces` or `lerna`). With `Config#include` you can dynamically include files by a glob pattern:
 
 ```ts
 // Do not forget the await!
@@ -183,6 +183,27 @@ And in your package you can use this macro as follow:
 
 ```ts
 config.from<EsLintMacroArgs>("lint eslint", { prefix: "utils" });
+```
+
+### Interact with the GitLab REST API
+
+This package comes with [`@gitbeaker/node`](https://github.com/jdalrymple/gitbeaker) bundled, so you can directly communicate with the [GitLab REST API](https://docs.gitlab.com/ee/api/api_resources.html). The API handler is brought to you with the following functionality:
+
+```typescript
+// List last 500 jobs in your project
+config.api.Jobs.all(1 /* your project id */, {
+    maxPages: 5,
+    perPage: 100,
+});
+```
+
+### Get changed files
+
+If you need to detect changed file while child pipeline generation, you can use the following:
+
+```typescript
+const changed = config.hasChanged(); // returns string[]
+const specificFileHasChanged = config.hasChanged(/^packages\/my-package\//gm);
 ```
 
 ### Use installed modules

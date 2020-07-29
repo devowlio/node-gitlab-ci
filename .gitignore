@@ -1,3 +1,5 @@
+.gitlab-ci.ts.yml
+
 # Logs
 logs
 *.log
