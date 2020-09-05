@@ -31,6 +31,11 @@ class Config {
     private macros: { [key: string]: (config: Config, args: any) => void } = {};
 
     /**
+     * See patch() method.
+     */
+    private patchers: Array<(plain: GitLabCi) => void> = [];
+
+    /**
      * REST API handler.
      */
     private gapi?: GitlabType;
@@ -129,6 +134,14 @@ class Config {
     }
 
     /**
+     * Allows to run a callback on the resulting GitLab CI Yaml object (after recursively applying
+     * extends and macros).
+     */
+    public patch(callback: Config["patchers"][0]) {
+        this.patchers.push(callback);
+    }
+
+    /**
      * A job is defined as a list of parameters that define the job’s behavior.
      *
      * @see https://docs.gitlab.com/ee/ci/yaml/#configuration-parameters
@@ -204,6 +217,10 @@ class Config {
 
         this.resolveExtends(copy);
         this.clear(copy);
+
+        for (const patcher of this.patchers) {
+            patcher(copy);
+        }
 
         // Move jobs to root
         copy = {
