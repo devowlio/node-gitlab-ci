@@ -13,7 +13,7 @@ type CacheDefinition = {
     /**
      * @see https://docs.gitlab.com/ee/ci/yaml/#cachepolicy
      */
-    policy?: "pull-push" | "push";
+    policy?: "pull-push" | "push" | "pull";
     /**
      * @see https://docs.gitlab.com/ee/ci/yaml/#cachekey
      */
