@@ -1,5 +1,4 @@
 {
-    /* Documentation: https://www.typescriptlang.org/docs/handbook/compiler-options.html */
     "compilerOptions": {
         /* Basic options */
         "target": "es5",

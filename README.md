@@ -1,10 +1,16 @@
 # node-gitlab-ci
 
-**Dynamically create your `.gitlab-ci.yml` from TypeScript `.ts` files!**
+<img align="right" src="https://assets.devowl.io/git/node-gitlab-ci/logo.png" alt="node-gitlab-ci Logo" height="180" />
+
+**Create dynamic GitLab CI pipelines in JavaScript or TypeScript for each project. Reuse and inherit instructions and avoid duplicate code!**
+
+Continuous Integration (CI) and Continuous Deployment (CD) are fantastic concepts for process automation in software development. We love GitLab CI because it implements the concept in an integrated solution with powerful configuration capabilities. However, pipeline configurations are stored in a static `.gitlab-ci.yml` file.
+
+node-gitlab-ci allows you to **develop pipeline configurations dynamically in TypeScript and avoid duplicates in the statements with programming concepts like inheritance or functions.** This way you can perfectly integrate e.g. monorepos with many similiar projects into the CI/CD.
 
 ## Installation
 
-First of all navigate to your repository and install the package via `yarn` or `npm`:
+Navigate to your repository and install the package via `yarn` or `npm`:
 
 ```bash
 # Yarn
@@ -36,13 +42,13 @@ trigger pipeline:
               job: ts config
 ```
 
-What does this mean? The first job creates the `.gitlab-ci.ts.yml` file dynamically and the second job triggers the child pipeline. Learn more about it [here](https://docs.gitlab.com/ee/ci/parent_child_pipelines.html). It is recommend to add `.gitlab-ci.ts.yml` to your `.gitignore` file.
+What does this statement do? The first job creates the `.gitlab-ci.ts.yml` file dynamically and the second job triggers the child pipeline. Learn more about this [in the GitLab documentation for child pipelines](https://docs.gitlab.com/ee/ci/parent_child_pipelines.html). It is recommended to add the `.gitlab-ci.ts.yml` file to your `.gitignore` file.
 
 ## Usage
 
 ### Your first `.gitlab-ci.ts`
 
-It is a good practice to create a root `.gitlab-ci.ts` in your repository:
+It is a good practice to create a `.gitlab-ci.ts` in the root directory of your repository:
 
 ```ts
 import { Config, CreateConfigFunction } from "node-gitlab-ci";
