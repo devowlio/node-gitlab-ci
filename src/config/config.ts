@@ -240,7 +240,7 @@ class Config {
     public get api() {
         if (!this.gapi) {
             this.gapi = new Gitlab({
-                host: process.env.CI_API_V4_URL,
+                host: process.env.CI_SERVER_URL,
                 token: process.env.GITLAB_TOKEN,
                 jobToken: process.env.CI_JOB_TOKEN,
                 rejectUnauthorized: true,
