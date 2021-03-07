@@ -239,10 +239,11 @@ class Config {
      */
     public get api() {
         if (!this.gapi) {
+            const { CI_JOB_TOKEN, GITLAB_TOKEN, CI_SERVER_URL } = process.env;
             this.gapi = new Gitlab({
-                host: process.env.CI_SERVER_URL,
-                token: process.env.GITLAB_TOKEN,
-                jobToken: process.env.CI_JOB_TOKEN,
+                host: CI_SERVER_URL,
+                token: GITLAB_TOKEN,
+                ...(GITLAB_TOKEN ? {} : { jobToken: CI_JOB_TOKEN }),
                 rejectUnauthorized: true,
             }) as GitlabType;
         }
