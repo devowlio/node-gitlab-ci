@@ -1,7 +1,4 @@
-/**
- * @see https://docs.gitlab.com/ee/ci/yaml/#cache
- */
-type CacheDefinition = {
+type SingleCacheDefinitionWithoutKey = {
     /**
      * @see https://docs.gitlab.com/ee/ci/yaml/#cachepaths
      */
@@ -14,21 +11,35 @@ type CacheDefinition = {
      * @see https://docs.gitlab.com/ee/ci/yaml/#cachepolicy
      */
     policy?: "pull-push" | "push" | "pull";
-    /**
-     * @see https://docs.gitlab.com/ee/ci/yaml/#cachekey
-     */
-    key?:
-        | string
-        | {
-              /**
-               * @see https://docs.gitlab.com/ee/ci/yaml/#cachekeyfiles
-               */
-              files: [string] | [string, string];
-              /**
-               * @see https://docs.gitlab.com/ee/ci/yaml/#cachekeyprefix
-               */
-              prefix?: string;
-          };
 };
+
+/**
+ * @see https://docs.gitlab.com/ee/ci/yaml/#cachekey
+ */
+type KeyDefinition =
+    | string
+    | {
+          /**
+           * @see https://docs.gitlab.com/ee/ci/yaml/#cachekeyfiles
+           */
+          files: [string] | [string, string];
+          /**
+           * @see https://docs.gitlab.com/ee/ci/yaml/#cachekeyprefix
+           */
+          prefix?: string;
+      };
+
+/**
+ * @see https://docs.gitlab.com/ee/ci/yaml/#cache
+ */
+type CacheDefinition =
+    | (SingleCacheDefinitionWithoutKey & {
+          key?: KeyDefinition;
+      })
+    | Array<
+          SingleCacheDefinitionWithoutKey & {
+              key: KeyDefinition;
+          }
+      >;
 
 export { CacheDefinition };
