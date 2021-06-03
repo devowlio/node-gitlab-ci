@@ -5,7 +5,7 @@ import { Gitlab } from "@gitbeaker/node";
 import { execSync } from "child_process";
 
 type JobDefinitionExtends = JobDefinition & { needsExtends?: string[] };
-type MacroArgs = {};
+type MacroArgs = Record<string, any>;
 
 type ConstructedType<Constructor> = Constructor extends {
     new (...args: any[]): infer B;

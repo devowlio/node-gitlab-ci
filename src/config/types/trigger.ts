@@ -35,6 +35,6 @@ type ChildPipeline = {
 /**
  * @see https://docs.gitlab.com/ee/ci/yaml/#trigger
  */
-type TriggerDefinition = MultiProjectPipeline;
+type TriggerDefinition = MultiProjectPipeline | ChildPipeline;
 
 export { TriggerDefinition };

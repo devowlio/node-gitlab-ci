@@ -10,6 +10,7 @@ async function executeCreateYml(opts: CreateYmlOpts) {
         throw new Error(`The passed file ${opts.file} does not exist!`);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     require("ts-node").register({
         dir: join(dirname(opts.file)),
         transpileOnly: true,
