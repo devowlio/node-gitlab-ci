@@ -11,3 +11,4 @@ if (process.argv.length < 3) {
 }
 
 export * from "./config";
+export * from "./utils";
