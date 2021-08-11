@@ -1,10 +1,10 @@
-import { GitLabCi, JobDefinition } from ".";
 import merge from "deepmerge";
 import { sync as globSync } from "glob";
 import { Gitlab } from "@gitbeaker/node";
 import { execSync } from "child_process";
+import { GitLabCi, Job } from "../types";
 
-type JobDefinitionExtends = JobDefinition & { needsExtends?: string[] };
+type JobDefinitionExtends = Job & { needsExtends?: string[] };
 type MacroArgs = Record<string, any>;
 
 type ConstructedType<Constructor> = Constructor extends {
