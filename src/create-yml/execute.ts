@@ -32,7 +32,7 @@ async function executeCreateYml(opts: CreateYmlOpts) {
         throw new Error(`The result of createConfig is not a Config instance!`);
     }
 
-    const result = stringify(config.getPlainObject(), 4);
+    const result = stringify(config.getPlainObject(), opts.pretty ? 4 : 0);
     writeFileSync(opts.output, result, { encoding: "utf-8" });
     console.log(`Successfully wrote YAML to ${opts.output}!`);
 }

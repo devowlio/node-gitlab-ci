@@ -5,12 +5,14 @@ import { executeCreateYml } from ".";
 type CreateYmlOpts = {
     file: string;
     output: string;
+    pretty: boolean;
 };
 
 const createYmlCommand = command("create-yml")
     .description("Create .gitlab-ci.yml dynamically from a .gitlab-ci.ts file.")
     .option("--file <value>", "The path to the .gitlab-ci.ts file", ".gitlab-ci.ts")
     .option("--output <value>", "The result gets output to this file", ".gitlab-ci.ts.yml")
+    .option("--pretty", "The result gets output prettified", false)
     .action((args: CreateYmlOpts) => {
         if (!args.file.startsWith("/")) {
             args.file = join(process.cwd(), args.file);
