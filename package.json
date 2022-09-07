@@ -16,7 +16,7 @@
         "node-gitlab-ci": "lib/index.js"
     },
     "main": "lib/index.js",
-    "types": "src/index.ts",
+    "types": "lib/index.d.ts",
     "homepage": "https://devowl.io/",
     "repository": {
         "type": "git",
