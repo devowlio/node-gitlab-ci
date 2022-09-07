@@ -41,6 +41,24 @@ class Config {
     private gapi?: GitlabType;
 
     /**
+     * Get the REST API handler.
+     *
+     * @see https://www.npmjs.com/package/node-gitlab
+     */
+    public get api() {
+        if (!this.gapi) {
+            const { CI_JOB_TOKEN, GITLAB_TOKEN, CI_SERVER_URL } = process.env;
+            this.gapi = new Gitlab({
+                host: CI_SERVER_URL,
+                token: GITLAB_TOKEN,
+                ...(GITLAB_TOKEN ? {} : { jobToken: CI_JOB_TOKEN }),
+                rejectUnauthorized: true,
+            }) as GitlabType;
+        }
+        return this.gapi;
+    }
+
+    /**
      * The top-level `workflow:` key applies to the entirety of a pipeline, and will determine whether
      * or not a pipeline is created. It currently accepts a single `rules:` key that operates similarly
      * to `rules:` defined within jobs, enabling dynamic configuration of the pipeline.
@@ -230,24 +248,6 @@ class Config {
         delete copy.jobs;
 
         return copy;
-    }
-
-    /**
-     * Get the REST API handler.
-     *
-     * @see https://www.npmjs.com/package/node-gitlab
-     */
-    public get api() {
-        if (!this.gapi) {
-            const { CI_JOB_TOKEN, GITLAB_TOKEN, CI_SERVER_URL } = process.env;
-            this.gapi = new Gitlab({
-                host: CI_SERVER_URL,
-                token: GITLAB_TOKEN,
-                ...(GITLAB_TOKEN ? {} : { jobToken: CI_JOB_TOKEN }),
-                rejectUnauthorized: true,
-            }) as GitlabType;
-        }
-        return this.gapi;
     }
 
     /**
