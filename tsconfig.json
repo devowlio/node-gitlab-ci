@@ -9,6 +9,7 @@
         "skipLibCheck": false,
         "isolatedModules": false,
         "outDir": "lib",
+        "declaration": true,
 
         /* Strict Type-Checking Options */
         "strict": true,

@@ -1,7 +1,7 @@
 import { join, dirname } from "path";
 import { CreateYmlOpts } from ".";
 import { existsSync, writeFileSync } from "fs";
-import { stringify } from "yamljs";
+import * as YamlJS from "yamljs";
 import { Config } from "../config";
 
 async function executeCreateYml(opts: CreateYmlOpts) {
@@ -32,7 +32,7 @@ async function executeCreateYml(opts: CreateYmlOpts) {
         throw new Error(`The result of createConfig is not a Config instance!`);
     }
 
-    const result = stringify(config.getPlainObject(), opts.pretty ? 4 : 0);
+    const result = YamlJS.stringify(config.getPlainObject(), opts.pretty ? 4 : 0);
     writeFileSync(opts.output, result, { encoding: "utf-8" });
     console.log(`Successfully wrote YAML to ${opts.output}!`);
 }

@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
-import { parse } from "commander";
-import "./create-yml";
+import { Command } from "commander";
+import { createYmlCommand } from "./create-yml";
 
-const program = parse(process.argv);
+const program = new Command();
+createYmlCommand(program);
+program.parse(process.argv);
 
 // If no argument is passed show help
 if (process.argv.length < 3) {

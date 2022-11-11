@@ -41,6 +41,24 @@ class Config {
     private gapi?: GitlabType;
 
     /**
+     * Get the REST API handler.
+     *
+     * @see https://www.npmjs.com/package/node-gitlab
+     */
+    public get api() {
+        if (!this.gapi) {
+            const { CI_JOB_TOKEN, GITLAB_TOKEN, CI_SERVER_URL } = process.env;
+            this.gapi = new Gitlab({
+                host: CI_SERVER_URL,
+                token: GITLAB_TOKEN,
+                ...(GITLAB_TOKEN ? {} : { jobToken: CI_JOB_TOKEN }),
+                rejectUnauthorized: true,
+            }) as GitlabType;
+        }
+        return this.gapi;
+    }
+
+    /**
      * The top-level `workflow:` key applies to the entirety of a pipeline, and will determine whether
      * or not a pipeline is created. It currently accepts a single `rules:` key that operates similarly
      * to `rules:` defined within jobs, enabling dynamic configuration of the pipeline.
@@ -233,24 +251,6 @@ class Config {
     }
 
     /**
-     * Get the REST API handler.
-     *
-     * @see https://www.npmjs.com/package/node-gitlab
-     */
-    public get api() {
-        if (!this.gapi) {
-            const { CI_JOB_TOKEN, GITLAB_TOKEN, CI_SERVER_URL } = process.env;
-            this.gapi = new Gitlab({
-                host: CI_SERVER_URL,
-                token: GITLAB_TOKEN,
-                ...(GITLAB_TOKEN ? {} : { jobToken: CI_JOB_TOKEN }),
-                rejectUnauthorized: true,
-            }) as GitlabType;
-        }
-        return this.gapi;
-    }
-
-    /**
      * Check if files got changed by a commit by a regexp. E. g. `^\.vscode\/launch\.json$`.
      */
     public async hasChanged(regexp?: RegExp, sha?: string, cwd = process.cwd()) {
@@ -309,7 +309,7 @@ class Config {
      * @param pipeline
      */
     private resolveExtends(pipeline: GitLabCi) {
-        const jobIds = Object.keys(pipeline.jobs);
+        const jobIds = Object.keys(pipeline.jobs ?? {});
         for (const key of jobIds) {
             const job = pipeline.jobs[key];
             if (job.extends && !key.startsWith(".")) {
@@ -334,7 +334,7 @@ class Config {
      */
     private clear(pipeline: GitLabCi) {
         // Finally, remove all existing `extends`
-        const jobIds = Object.keys(pipeline.jobs);
+        const jobIds = Object.keys(pipeline.jobs ?? {});
         for (const key of jobIds) {
             const job = pipeline.jobs[key] as JobDefinitionExtends;
             if (job.extends) {
