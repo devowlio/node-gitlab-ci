@@ -309,7 +309,7 @@ class Config {
      * @param pipeline
      */
     private resolveExtends(pipeline: GitLabCi) {
-        const jobIds = Object.keys(pipeline.jobs);
+        const jobIds = Object.keys(pipeline.jobs ?? {});
         for (const key of jobIds) {
             const job = pipeline.jobs[key];
             if (job.extends && !key.startsWith(".")) {
@@ -334,7 +334,7 @@ class Config {
      */
     private clear(pipeline: GitLabCi) {
         // Finally, remove all existing `extends`
-        const jobIds = Object.keys(pipeline.jobs);
+        const jobIds = Object.keys(pipeline.jobs ?? {});
         for (const key of jobIds) {
             const job = pipeline.jobs[key] as JobDefinitionExtends;
             if (job.extends) {
