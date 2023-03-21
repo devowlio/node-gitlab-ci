@@ -13,7 +13,7 @@
         "continuous-integration"
     ],
     "bin": {
-        "node-gitlab-ci": "lib/index.js"
+        "node-gitlab-ci": "lib/cli.js"
     },
     "main": "lib/index.js",
     "types": "src/index.ts",
